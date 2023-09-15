@@ -1,0 +1,40 @@
+module matrix8x8(a, b, y);
+
+  input [63:0] a, b; // 8x8 input matrices (1-bit elements)
+  output reg [127:0] y; // 8x8 output matrix (2-bit elements)
+
+  reg [2:0] a1[0:7][0:7];
+  reg [2:0] b1[0:7][0:7];
+  reg [2:0] y1[0:7][0:7];
+
+  integer i, j, k;
+
+  always @(a or b)
+  begin
+    // Unpack the 1-bit input matrices a and b into 3-bit matrices a1 and b1
+    for (i = 0; i < 8; i=i+1) begin
+      for (j = 0; j < 8; j=j+1) begin
+        a1[i][j] = a[i*8 + j];
+        b1[i][j] = b[i*8 + j];
+      end
+    end
+
+    // Matrix multiplication
+    for (i = 0; i < 8; i=i+1) begin
+      for (j = 0; j < 8; j=j+1) begin
+        y1[i][j] = 3'b000; // Initialize each element in the output matrix to 0
+        for (k = 0; k < 8; k=k+1) begin
+          y1[i][j] = y1[i][j] + (a1[i][k] * b1[k][j]);
+        end
+      end
+    end
+
+    // Pack the 2-bit output matrix y1 into the 128-bit output y
+    for (i = 0; i < 8; i=i+1) begin
+      for (j = 0; j < 8; j=j+1) begin
+        y[i*16 + j*2 +: 2] = y1[i][j];
+      end
+    end
+  end
+
+endmodule
